@@ -15,7 +15,6 @@ const getLocalDate = () => {
 };
 
 
-
 const WeightTracking = () => {
   const [petName, setPetName] = useState('');
   const [weight, setWeight] = useState('');
@@ -44,7 +43,7 @@ const WeightTracking = () => {
   ]
 
 
-  const getBreedImage = (breedName) => {
+  const getBreedImage = (breedName) => { 
     const breed = breeds.find(b => b.name === breedName);
     return breed ? breed.image : '';
   };
@@ -55,7 +54,7 @@ const WeightTracking = () => {
         setUser(currentUser);
       });
 
-    const fetchPetNames = async () => {
+    const fetchPetNames = async () => { //for drop-down menu, can select pet you used in appointment or weight tracker
       if (!user) return;
   
       const petData = []; // Array to store pet objects
@@ -77,7 +76,7 @@ const WeightTracking = () => {
         }
       });
   
-      setPetNames(petData); // Save as array of objects
+      setPetNames(petData); 
     };
 
    const fetchWeightsAndMeals = async () => {
@@ -114,22 +113,24 @@ const WeightTracking = () => {
 
 // Function to add pet weight data to Firestore
 async function addPetWeight(petName, breed, weight, date) {
-    if(!user) return;
-    try {
-      const docRef = await addDoc(collection(db, "petWeights"), {
-        petName: petName,
-        breed: breed,
-        weight: weight,
-        date: new Date(date),
-        userId: user.uid
-      });
-      console.log("Weight document written with ID: ", docRef.id);
-      return true;
-    } catch (error) {
-      console.error("Error adding weight document: ", error);
-      return false;
-    }
+  if (!user) return;
+  try {
+    // Parse the local date to ensure it's stored as midnight local time
+    
+    const docRef = await addDoc(collection(db, "petWeights"), {
+      petName: petName,
+      breed: breed,
+      weight: weight,
+      date, // Store the ISO string
+      userId: user.uid
+    });
+    console.log("Weight document written with ID: ", docRef.id);
+    return true;
+  } catch (error) {
+    console.error("Error adding weight document: ", error);
+    return false;
   }
+}
 
 // Function to add meal data to Firestore
 async function addMeal(petName, breed, mealDescription, weightDate) {
@@ -160,7 +161,7 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
       setWeight('');
       setBreed('');
       setStatus("Weight added successfully!");
-      setDate(getLocalDate);
+      setDate('');
       // Re-fetch weights after adding
       const updatedWeights = await getDocs(collection(db, "petWeights"));
       const data = [];
@@ -215,10 +216,17 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
 
   const filteredWeights = weights.filter(weightEntry => weightEntry.petName === selectedPet); //filtered weight for chart
 
+  const sortedWeights = filteredWeights.sort((a, b) => {
+    const dateA = new Date(a.date); // Convert string to Date object
+    const dateB = new Date(b.date); // Convert string to Date object
+    
+    return dateA - dateB; // Sort in ascending order
+  });
+
   return (
     <>
     <Navbar />
-      <div className="pt-20">
+      <div className="pt-20 content">
       <Script id="chatling-config" strategy="afterInteractive">
         {`window.chtlConfig = { chatbotId: "7362981259" };`}
       </Script>
@@ -230,8 +238,8 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
       />
 
       
-      <h2 className = "mt-16">Log Pet Weight</h2>
-      
+      <h2>Log Pet Weight</h2>
+      <div className="form-container">
       {user ? (
         <form onSubmit={handleWeightSubmit} className="mt-16">
         <label htmlFor="pet">Select a Pet:</label>
@@ -293,8 +301,9 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
       ) : (
         <p>Please log in to add pet weight.</p>
       )}
+      </div>
 
-      <h2>Log Pet Meal</h2>
+      {/* <h2>Log Pet Meal</h2>
       {user ? (
         <form onSubmit={handleMealSubmit}>
           <input
@@ -317,7 +326,7 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
         <p>Please log in to add pet meals.</p>
       )}
 
-      {status && <p>{status}</p>}
+      {status && <p>{status}</p>} */}
       
 
       <h2>Logged Weights</h2>
@@ -327,7 +336,7 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
             <li key={index} className="mb-2">
               <img src={getBreedImage(weightEntry.breed)} alt={weightEntry.breed} className="breed-image" />
               {`Pet Name: ${weightEntry.petName}, Weight: ${weightEntry.weight} kg, Date: ${
-  weightEntry.date.toDate ? weightEntry.date.toDate().toLocaleDateString() : new Date(weightEntry.date).toLocaleDateString()
+  weightEntry.date
 }`}
               {/* Show meals for this weight entry */}
               <ul>
@@ -346,7 +355,7 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
         <p>No weights logged yet.</p>
       )}
 
-      <h2>Logged Meals</h2>
+      {/* <h2>Logged Meals</h2>
       {meals.length > 0 ? (
         <ul className="list-disc pl-5">
           {meals.map((mealEntry, index) => (
@@ -357,7 +366,7 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
         </ul>
       ) : (
         <p>No meals logged yet.</p>
-      )}
+      )} */}
 
   
 
@@ -386,7 +395,6 @@ Select a Pet
             ))}
           </select>
 
-
 <div className="text-center"> 
   <h3> 
     {/* Display the breed image and selected pet's name */}
@@ -397,9 +405,11 @@ Select a Pet
       </>
     )}
   </h3>
-  <LineChartComponent weights={filteredWeights} />
+  
 </div>
-    
+<div className="w-full max-w-4xl mx-auto">
+  <LineChartComponent weights={sortedWeights} />
+  </div>
 
 
 </div>

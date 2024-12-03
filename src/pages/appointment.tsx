@@ -154,7 +154,7 @@ const Appointment = () => {
     <div className="pt-20">
       <Navbar />
 
-      <h1>Manage Appointments</h1>
+      <h1 className=" mt-16 text-center font-bold text-3xl text-green-500" >Manage Appointments</h1>
       {user ? ( // Check if user is logged in
         <form onSubmit={handleAppointmentSubmit} className="mt-16">
           <label htmlFor="pet">Select a Pet:</label>
@@ -213,7 +213,7 @@ const Appointment = () => {
           <button type="submit">Add Appointment</button>
         </form>
       ) : (
-        <p>Please log in to manage your appointments.</p> // Message when not logged in
+        <p >Please log in to manage your appointments.</p> // Message when not logged in
       )}
       <p>{status}</p>
 

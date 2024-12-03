@@ -39,7 +39,7 @@ const Navbar = () => {
                 {/* Conditionally render based on authentication status */}
                 {authUser ? (
                     <>
-                        <span className="text-white text-lg">Signed In as {authUser.email}</span>
+                        <span className="text-white text-lg">{authUser.email}</span>
                         <button onClick={userSignOut} className="text-white text-lg hover:text-yellow-300 cursor-pointer transition duration-300">
                             Sign Out
                         </button>

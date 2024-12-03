@@ -7,7 +7,7 @@ module.exports = {
     "./src/pages/index.tsx",
     "./src/pages/components/Navbar.jsx",
     "./src/pages/PetWeight.tsx",
-    "./src/pages/appointment.jsx",
+    "./src/pages/appointment.tsx",
     "./src/auth/SignIn.jsx",
     "./src/auth/SignOut.jsx"
 
