@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { db, auth } from './fireBaseConfig';
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
 import LineChartComponent from './components/LineChart';
 import Script from 'next/script';
 import Link from 'next/link';
@@ -86,7 +86,7 @@ const WeightTracking = () => {
       weightSnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.userId === user.uid) { // Filter weights for the current user
-          weightData.push(data);
+          weightData.push({ id: doc.id, ...data });
         }
       });
       setWeights(weightData);
@@ -177,6 +177,18 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
     }
   };
 
+  async function deletePetWeight(id) {
+    try {
+      const docRef = doc(db, "petWeights", id);
+      await deleteDoc(docRef);
+      console.log("Weight document deleted with ID: ", id);
+      return true;
+    } catch (error) {
+      console.error("Error deleting weight document: ", error);
+      return false;
+    }
+  }
+
   // Handle pet selection change
   const handlePetChange = (e) => {
     const selectedPetName = e.target.value;
@@ -214,6 +226,16 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
     }
   };
 
+  const handleDeleteWeight = async (id) => {
+    const deleted = await deletePetWeight(id);
+    if (deleted) {
+      // Filter out the deleted weight entry from the state
+      setWeights(weights.filter(weightEntry => weightEntry.id !== id));
+    } else {
+      setStatus("Failed to delete weight.");
+    }
+  };
+
   const filteredWeights = weights.filter(weightEntry => weightEntry.petName === selectedPet); //filtered weight for chart
 
   const sortedWeights = filteredWeights.sort((a, b) => {
@@ -241,7 +263,7 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
       <h2>Log Pet Weight</h2>
       <div className="form-container">
       {user ? (
-        <form onSubmit={handleWeightSubmit} className="mt-16">
+        <form onSubmit={handleWeightSubmit}>
         <label htmlFor="pet">Select a Pet:</label>
         <select
           id="pet"
@@ -255,7 +277,7 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
                 {petName}
               </option>
             ))}
-            <option value="Other">Other</option>
+            <option value="Other">New Pet</option>
           </select>
 
         {isNewPet && (
@@ -335,9 +357,15 @@ async function addMeal(petName, breed, mealDescription, weightDate) {
           {weights.map((weightEntry, index) => (
             <li key={index} className="mb-2">
               <img src={getBreedImage(weightEntry.breed)} alt={weightEntry.breed} className="breed-image" />
-              {`Pet Name: ${weightEntry.petName}, Weight: ${weightEntry.weight} kg, Date: ${
-  weightEntry.date
-}`}
+      {`Pet Name: ${weightEntry.petName}, Weight: ${weightEntry.weight} kg, Date: ${weightEntry.date}`}
+      {/* Add delete button */}
+      <button
+        onClick={() => handleDeleteWeight(weightEntry.id)} // Call the delete handler
+        className="ml-4 hover:underline"
+      >
+        Delete
+      </button>
+
               {/* Show meals for this weight entry */}
               <ul>
                 {meals

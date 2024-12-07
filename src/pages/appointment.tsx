@@ -151,12 +151,15 @@ const Appointment = () => {
   };
 
   return (
-    <div className="pt-20">
-      <Navbar />
+    <>
+    <Navbar />
+    <div className="pt-20 content">
+      
 
       <h1 className=" mt-16 text-center font-bold text-3xl text-green-500" >Manage Appointments</h1>
+      <div className="form-container">
       {user ? ( // Check if user is logged in
-        <form onSubmit={handleAppointmentSubmit} className="mt-16">
+        <form onSubmit={handleAppointmentSubmit}>
           <label htmlFor="pet">Select a Pet:</label>
           <select
             id="pet"
@@ -170,7 +173,7 @@ const Appointment = () => {
                 {petName}
               </option>
             ))}
-            <option value="Other">Other</option>
+            <option value="Other">New Pet</option>
           </select>
 
           {isNewPet && (
@@ -182,13 +185,18 @@ const Appointment = () => {
                 onChange={(e) => setPetName(e.target.value)}
                 required
               />
-              <input
-                type="text"
-                placeholder="Enter breed"
-                value={breed}
-                onChange={(e) => setBreed(e.target.value)}
-                required
-              />
+              <select
+            value={breed}
+            onChange={(e) => setBreed(e.target.value)}
+            required
+          >
+            <option value="" disabled>Select Breed</option>
+            {breeds.map((breedOption, index) => (
+              <option key={index} value={breedOption.name}>
+                {breedOption.name}
+              </option>
+            ))}
+          </select>
             </div>
           )}
 
@@ -216,23 +224,29 @@ const Appointment = () => {
         <p >Please log in to manage your appointments.</p> // Message when not logged in
       )}
       <p>{status}</p>
+      </div>
 
       <h2>Your Appointments</h2>
       {user ? (
-        <ul>
-          {appointments.map((appt) => (
-            <li key={appt.id}>
-              <img src={getBreedImage(appt.breed)} alt={appt.breed} className="breed-image" />
-              {appt.type} for {appt.petName}{" "}
-              {appt.breed && `(${appt.breed})`} on {appt.date} at {appt.time}
-              <button onClick={() => handleDeleteAppointment(appt.id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+        <div className="appointments-grid">
+        {appointments.map((appt) => (
+          <div key={appt.id} className="appointment-card">
+            <img src={getBreedImage(appt.breed)} alt={appt.breed} className="breed-image" />
+            <div className="appointment-details">
+              <h3 className="text-green-500">{appt.type}</h3>
+              <p>For: {appt.petName} {appt.breed && `(${appt.breed})`}</p>
+              <p>Date: {appt.date}</p>
+              <p>Time: {appt.time}</p>
+            </div>
+            <button className="delete-button" onClick={() => handleDeleteAppointment(appt.id)}>Delete</button>
+          </div>
+        ))}
+      </div>
       ) : (
         <p>Please log in to view your appointments.</p> // Message when not logged in
       )}
     </div>
+    </>
   );
 };
 
