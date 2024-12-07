@@ -33,6 +33,6 @@ Chat:
 
 Chatling API
 
-Setup Instructions
+**Setup Instructions**
 - Clone Repository and install dependencies
 - Then, npm run dev and it should work as intended
